@@ -603,11 +603,10 @@ window.kirimData = async function() {
     
     await set(ref(db, "panelPJU/" + customID), {
       link_api: weatherApiUrl,
-      id_panel: customID, nama_panel: nama, latitude: lat, longitude: lon, alamat_detail: fullAddress,
-      cuaca_id: data.weather?.[0]?.id || 0, 
+      id_panel: customID, nama_panel: nama, latitude: lat, longitude: lon, alamat_detail: ful
       jarak_pandang: data.visibility || 0, 
       status_panel: "MATI", mode: "OTOMATIS",
-          });
+      });
     toggleModal(false); initialBoundsSet = false; showToast(`${customID} terdaftar.`);
   } catch (e) { showToast("Gagal registrasi"); } finally { document.getElementById("btnSimpan").innerText = "Simpan Perangkat"; }
 }
