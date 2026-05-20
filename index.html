@@ -604,7 +604,7 @@ window.kirimData = async function() {
     const fullAddress = await getAddressFromCoords(lat, lon);
     const snap = await get(ref(db, "panelPJU"));
     let nextNum = 1; if(snap.exists()) nextNum = Object.keys(snap.val()).length + 1;
-    const customID = `PJU${nextNum}`;
+    const customID = `Panel-${nextNum}`;
     
     await set(ref(db, "panelPJU/" + customID), {
       link_api: weatherApiUrl,
@@ -614,7 +614,8 @@ window.kirimData = async function() {
       status_panel: "MATI", mode: "OTOMATIS",
       sunrise: "--:--",
       sunset: "--:--",
-      update_terakhir: "--:--"
+      update_terakhir: "--:--",
+      simulasi: "false"
     });
     toggleModal(false); initialBoundsSet = false; showToast(`${customID} terdaftar.`);
   } catch (e) { showToast("Gagal registrasi"); } finally { document.getElementById("btnSimpan").innerText = "Simpan Perangkat"; }
