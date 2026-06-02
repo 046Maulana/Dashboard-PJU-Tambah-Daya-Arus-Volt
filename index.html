@@ -202,7 +202,7 @@
     .bulb-svg { width: 20px; height: 20px; fill: #cbd5e1; }
     .status-on .bulb-svg { fill: var(--warning); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); }
 
-    .mode-toggle { display: flex; background: rgba(0,0,0,0.03); padding: 3px; border-radius: 10px; margin-bottom: 12px; z-index: 1; transition: all 0.3s ease; }
+    .mode-toggle { display: flex; background: rgba(0,0,0,0.03); padding: 3px; border-radius: 10px; margin-bottom: 12px; z-index: 1; }
     .mode-btn { flex: 1; border: none; padding: 6px; font-size: 9px; font-weight: 800; border-radius: 7px; cursor: pointer; background: transparent; color: var(--text-light); }
     .mode-btn.active { background: white; color: var(--text-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
@@ -263,8 +263,8 @@
     }
     .power-box .data-value { font-size: 12px; color: var(--primary-dark); }
 
-    .actions { display: flex; gap: 8px; z-index: 1; transition: all 0.3s ease; }
-    .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.2s ease; }
+    .actions { display: flex; gap: 8px; z-index: 1; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 700; font-size: 11px; cursor: pointer; }
     .btn-main { background: #f1f5f9; border: 1px solid #e2e8f0; }
     .status-on .btn-main { background: var(--text-dark); color: white; border: none; }
     .btn-danger { background: #fee2e2; color: var(--danger); width: 38px; flex: none; display: flex; align-items: center; justify-content: center; }
@@ -401,12 +401,11 @@ let markers = {};
 let allPanelData = [];
 let initialBoundsSet = false;
 
-// --- TAMBAHAN UNTUK ANTI-MBENDAL (OPTIMISTIC UI) ---
-let localOverrides = {}; // Menyimpan state UI sementara 
-// ----------------------------------------------------
-
+// Fungsi Visual Cuaca Detail dengan Mapping ID Lengkap (Jawa Timur / Indonesia Context)
 function getWeatherVisualById(weatherId) {
     const id = parseInt(weatherId);
+    
+    // Icons
     const iconSun = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
     const iconStorm = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 9 17 15 17 11 23"/></svg>`;
     const iconRain = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 13v8M8 13v8M12 15v8M20 16.58A5 5 0 0 0 18 10h-1.26A8 8 0 1 0 4 15.25"/></svg>`;
@@ -414,10 +413,12 @@ function getWeatherVisualById(weatherId) {
     const iconFog = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="9" y1="16" x2="15" y2="16"/></svg>`;
     const iconDrizzle = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 19l2 2m4-2l2 2m-4-6l2 2m0-6l2 2M20 16.58A5 5 0 0 0 18 10h-1.26A8 8 0 1 0 4 15.25"/></svg>`;
 
+    // no data
      if (id == 0) {
         return { label: 'NaN', meaning: "Undefined", class: 'card-clouds', icon: iconCloud };
     }
 
+    // 1. Thunderstorm (200 - 232)
     if (id >= 200 && id < 300) {
         let desc = "Petir";
         if (id == 200) desc = "Petir + Hujan Ringan";
@@ -429,6 +430,7 @@ function getWeatherVisualById(weatherId) {
         return { label: 'Thunderstorm', meaning: desc, class: 'card-thunderstorm', icon: iconStorm };
     }
 
+    // 2. Drizzle (300 - 321)
     if (id >= 300 && id < 400) {
         let desc = "Gerimis";
         if (id == 300) desc = "Gerimis Ringan";
@@ -438,6 +440,7 @@ function getWeatherVisualById(weatherId) {
         return { label: 'Drizzle', meaning: desc, class: 'card-drizzle', icon: iconDrizzle };
     }
 
+    // 3. Rain (500 - 531)
     if (id >= 500 && id < 600) {
         let desc = "Hujan";
         if (id == 500) desc = "Hujan Ringan";
@@ -448,6 +451,7 @@ function getWeatherVisualById(weatherId) {
         return { label: 'Rain', meaning: desc, class: 'card-rain', icon: iconRain };
     }
 
+    // 4. Atmosphere (700 - 781)
     if (id >= 700 && id < 800) {
         let desc = "Atmosferik";
         if (id == 701) desc = "Kabut Tipis (Mist)";
@@ -457,10 +461,12 @@ function getWeatherVisualById(weatherId) {
         return { label: 'Atmosphere', meaning: desc, class: 'card-atmosphere', icon: iconFog };
     }
 
+    // 5. Clear (800)
     if (id == 800) {
         return { label: 'Clear', meaning: "Langit Cerah", class: 'card-clear', icon: iconSun };
     }
 
+    // 6. Clouds (801 - 804)
     if (id > 800 && id < 900) {
         let desc = "Berawan";
         if (id == 801) desc = "Sedikit Berawan";
@@ -523,16 +529,9 @@ function listenFirebase() {
         let total = 0, on = 0;
         const bounds = new google.maps.LatLngBounds();
         let validCoords = 0;
-        const now = Date.now();
 
         allPanelData.forEach(({id, val}) => {
-            // --- Cek override lokal agar marker peta juga gak mbendal ---
-            let currentStatus = val.status_panel;
-            if (localOverrides[id] && localOverrides[id].statusExpires && now < localOverrides[id].statusExpires) {
-                currentStatus = localOverrides[id].status_panel;
-            }
-
-            const isPanelOn = currentStatus === "NYALA";
+            const isPanelOn = val.status_panel === "NYALA";
             total++; if(isPanelOn) on++;
             const cleanLat = String(val.latitude).replace(',', '.');
             const cleanLng = String(val.longitude).replace(',', '.');
@@ -622,84 +621,23 @@ window.kirimData = async function() {
   } catch (e) { showToast("Gagal registrasi"); } finally { document.getElementById("btnSimpan").innerText = "Simpan Perangkat"; }
 }
 
-// --- UPDATE: FUNGSI TOGGLE ANTI-MBENDAL ---
-window.togglePanel = (id, s) => {
-  const now = Date.now();
-  if (!localOverrides[id]) localOverrides[id] = {};
-  
-  // Jika tombol status masih dilock, abaikan klik
-  if (localOverrides[id].statusExpires && now < localOverrides[id].statusExpires) return;
-
-  // Set override lokal dan kunci 5 detik
-  localOverrides[id].status_panel = s;
-  localOverrides[id].statusExpires = now + 5000;
-
-  update(ref(db, "panelPJU/" + id), { status_panel: s });
-  
-  // Hapus kuncian otomatis setelah 5 detik agar membaca data Firebase murni lagi
-  setTimeout(() => {
-    if (Date.now() >= localOverrides[id].statusExpires) {
-       delete localOverrides[id].status_panel;
-       filterPanels();
-    }
-  }, 5000);
-};
-
-window.setMode = (id, m) => {
-  const now = Date.now();
-  if (!localOverrides[id]) localOverrides[id] = {};
-  
-  // Jika tombol mode masih dilock, abaikan klik
-  if (localOverrides[id].modeExpires && now < localOverrides[id].modeExpires) return;
-
-  // Set override lokal dan kunci 5 detik
-  localOverrides[id].mode = m;
-  localOverrides[id].modeExpires = now + 5000;
-
-  update(ref(db, "panelPJU/" + id), { mode: m });
-  
-  // Hapus kuncian otomatis setelah 5 detik
-  setTimeout(() => {
-    if (Date.now() >= localOverrides[id].modeExpires) {
-       delete localOverrides[id].mode;
-       filterPanels();
-    }
-  }, 5000);
-};
-// ------------------------------------------
-
+window.togglePanel = (id, s) => update(ref(db, "panelPJU/" + id), { status_panel: s });
+window.setMode = (id, m) => update(ref(db, "panelPJU/" + id), { mode: m });
 window.hapus = (id) => { if(confirm(`Hapus ${id}?`)) remove(ref(db, "panelPJU/" + id)); };
 
 function renderList(filteredData) {
   const list = document.getElementById("listData");
   const countLabel = document.getElementById("result-count");
   list.innerHTML = ""; countLabel.innerText = `${filteredData.length} Unit`;
-  const now = Date.now();
   
-  filteredData.forEach(({id, val: originalVal}) => {
-    // --- CEK OVERRIDE LOKAL ---
-    // Kita gunakan duplikat data (val) agar data asli (originalVal) tidak rusak
-    const val = { ...originalVal };
-    if (localOverrides[id]) {
-      if (localOverrides[id].statusExpires && now < localOverrides[id].statusExpires) {
-        val.status_panel = localOverrides[id].status_panel;
-      }
-      if (localOverrides[id].modeExpires && now < localOverrides[id].modeExpires) {
-        val.mode = localOverrides[id].mode;
-      }
-    }
-
-    // Variabel pengecekan apakah UI panel sedang dilock
-    const isModeLocked = localOverrides[id] && localOverrides[id].modeExpires && now < localOverrides[id].modeExpires;
-    const isStatusLocked = localOverrides[id] && localOverrides[id].statusExpires && now < localOverrides[id].statusExpires;
-    // --------------------------
-
+  filteredData.forEach(({id, val}) => {
     const isPanelOn = val.status_panel === "NYALA";
     const isAuto = val.mode === "OTOMATIS";
     const weatherId = val.cuaca_id || 0;
     const visual = getWeatherVisualById(weatherId);
     const visibilityKm = ((val.jarak_pandang || 0) / 1000).toFixed(1);
     const jamUpdate = val.update_terakhir || "--:--";
+
 
     const dayaValue = val.daya_w || 0;
     const arusValue = val.arus_ampere || 0;
@@ -708,4 +646,82 @@ function renderList(filteredData) {
 
     const ldrIcon = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42l15.72 15.72M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
     const timeIcon = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-    const boltIcon = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
+    const boltIcon = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+
+    card.className = `device-card ${visual.class} ${isPanelOn ? 'status-on' : ''}`;
+    card.innerHTML = `
+      <div class="update-badge">${jamUpdate}</div>
+      ${visual.icon}
+      <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px; position:relative; z-index:1">
+        <div class="bulb-container">${bulbSvg}</div>
+        <div>
+          <h4 style="margin:0; font-size:15px; font-weight:700">${val.nama_panel}</h4>
+          <span style="color:#475569; font-size:9px; font-weight:700; background:rgba(255,255,255,0.6); padding:2px 6px; border-radius:4px">${id}</span>
+        </div>
+      </div>
+      
+      <div class="mode-toggle">
+        <button class="mode-btn ${isAuto ? 'active' : ''}" onclick="setMode('${id}', 'OTOMATIS')">OTOMATIS</button>
+        <button class="mode-btn ${!isAuto ? 'active' : ''}" onclick="setMode('${id}', 'MANUAL')">MANUAL</button>
+      </div>
+
+      <div class="coordinate-box" onclick="map.setCenter({lat:${String(val.latitude).replace(',', '.')}, lng:${String(val.longitude).replace(',', '.')}}); map.setZoom(17);" style="cursor:pointer">
+        <div class="coord-values"><span><b>LAT</b> ${val.latitude}</span><span><b>LON</b> ${val.longitude}</span></div>
+        <div class="address-box">
+          <svg style="display:inline; margin-bottom:-1px; margin-right:2px" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${val.alamat_detail || 'Lokasi Terdaftar'}
+        </div>
+      </div>
+      <!-- Power & Load Monitoring -->
+      <div class="data-grid power-grid">
+        <div class="data-box power-box">
+            <span class="data-label">${boltIcon} BEBAN</span>
+            <span class="data-value">${dayaValue}<span class="data-subvalue">W</span></span>
+        </div>
+        <div class="data-box power-box">
+            <span class="data-label">ARUS</span>
+            <span class="data-value">${arusValue}<span class="data-subvalue">A</span></span>
+        </div>
+        <div class="data-box power-box">
+            <span class="data-label">VOLT</span>
+            <span class="data-value">${voltValue}<span class="data-subvalue">V</span></span>
+        </div>
+      </div>
+      <div class="data-grid">
+        <div class="data-box">
+            <span class="data-label">${visual.label} (ID: ${weatherId})</span>
+            <span class="data-value" title="${visual.meaning}">${visual.meaning}</span>
+        </div>
+        <div class="data-box">
+            <span class="data-label">${ldrIcon} SENSOR LDR</span>
+            <span class="data-value">${val.ldr || 0} <span class="data-subvalue">adc</span></span>
+        </div>
+        <div class="data-box">
+            <span class="data-label">${timeIcon} MATAHARI</span>
+            <span class="data-value" style="font-size: 8px;">↑ ${val.sunrise || '--:--'} | ↓ ${val.sunset || '--:--'}</span>
+        </div>
+        <div class="data-box">
+            <span class="data-label">VISIBILITY</span>
+            <span class="data-value">${visibilityKm} KM</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-main" onclick="togglePanel('${id}','${isPanelOn ? 'MATI' : 'NYALA'}')" ${isAuto ? 'disabled' : ''}>
+            ${isAuto ? 'Sistem' : (isPanelOn ? 'MATIKAN' : 'NYALAKAN')}
+        </button>
+        <button class="btn btn-danger" onclick="hapus('${id}')">✕</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateStats(t, o) { 
+    document.getElementById("count-total").innerText = t; 
+    document.getElementById("count-on").innerText = o; 
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIInGWkh72uC_udwGSTdciJZ55jLTpcSg&callback=initMap" async defer></script>
+</body>
+</html>
