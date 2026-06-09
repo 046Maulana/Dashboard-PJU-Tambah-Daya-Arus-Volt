@@ -566,6 +566,21 @@ function listenFirebase() {
                       labelOrigin: new google.maps.Point(12, -15) 
                     } 
                   }); 
+
+                  // FEATURE ADDED: Listener for Marker Click to Filter Sidebar List
+                  markers[id].addListener('click', () => {
+                    const searchInput = document.getElementById("searchInput");
+                    
+                    // Toggle Filter Logic
+                    if (searchInput.value === id) {
+                        searchInput.value = ""; // Remove filter if clicked again
+                    } else {
+                        searchInput.value = id; // Set filter to match Marker ID
+                    }
+                    
+                    // Trigger the existing filter function
+                    filterPanels();
+                  });
                 }
             }
         });
