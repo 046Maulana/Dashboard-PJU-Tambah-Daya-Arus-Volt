@@ -377,6 +377,15 @@
 
 <div id="toast" class="toast">Pesan Sistem</div>
 
+<script>
+  window.initMap = function() {
+    window.__googleMapsLoaded = true;
+    if (typeof window.__triggerInitMap === 'function') {
+      window.__triggerInitMap();
+    }
+  };
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, onValue, remove, update, get } 
@@ -498,7 +507,8 @@ async function getAddressFromCoords(lat, lng) {
   } catch (error) { return "Gagal memuat alamat"; }
 }
 
-window.initMap = function() {
+// Fungsi utama inisialisasi Peta
+function realInitMap() {
     const defaultCenter = { lat: -7.453, lng: 112.714 };
     map = new google.maps.Map(document.getElementById("map"), {
         center: defaultCenter, 
@@ -513,7 +523,14 @@ window.initMap = function() {
         showToast("Koordinat dipilih"); toggleModal(true);
     });
     listenFirebase();
-};
+}
+
+// Hubungkan skrip modul dengan detektor maps aman
+if (window.__googleMapsLoaded) {
+    realInitMap();
+} else {
+    window.__triggerInitMap = realInitMap;
+}
 
 function listenFirebase() {
     onValue(ref(db, "panelPJU"), (snapshot) => {
@@ -687,7 +704,6 @@ function renderList(filteredData) {
           ${val.alamat_detail || 'Lokasi Terdaftar'}
         </div>
       </div>
-      <!-- Power & Load Monitoring -->
       <div class="data-grid power-grid">
         <div class="data-box power-box">
             <span class="data-label">${boltIcon} BEBAN</span>
