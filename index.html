@@ -24,7 +24,7 @@
       --radius-lg: 24px;
       --radius-md: 16px;
       
-      /* Weather Colors */
+      /* Weather Colors Updated for better visual feedback */
       --bg-clear: #fff7ed;    
       --bg-clouds: #f1f5f9;   
       --bg-rain: #e0f2fe;     
@@ -252,7 +252,6 @@
     .data-label { display: flex; align-items: center; gap: 4px; font-size: 7px; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 2px; }
     .data-value { font-weight: 700; font-size: 11px; color: var(--text-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .data-subvalue { font-size: 9px; color: var(--text-muted); }
-    
     /* Power Specific Styles */
     .power-grid {
         grid-template-columns: 1fr 1fr 1fr;
@@ -285,26 +284,20 @@
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text-dark); color: white; padding: 12px 24px; border-radius: 12px; font-size: 13px; font-weight: 600; transition: all 0.3s; z-index: 3000; opacity: 0; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     
-    /* FIX: Pembaruan tampilan badge waktu agar lebih tegas dan tidak tertutup */
     .update-badge {
       position: absolute;
       top: 14px;
       right: 14px;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 4px 8px;
       border-radius: 8px;
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 800;
-      color: var(--text-dark);
-      border: 1px solid rgba(0,0,0,0.1);
-      z-index: 10;
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      color: var(--text-light);
+      border: 1px solid rgba(0,0,0,0.05);
+      z-index: 2;
+      backdrop-filter: blur(2px);
     }
-
     @media (max-width: 850px) {
       .main-content { flex-direction: column; overflow-y: auto; }
       .sidebar { width: 100%; border-right: none; border-top: 1px solid #e2e8f0; height: auto; order: 2; overflow-y: visible; }
@@ -382,15 +375,7 @@
   </div>
 </div>
 
-<!-- SOLUSI AMAN: Deteksi Callback Sebelum Google Maps Selesai Diunduh -->
-<script>
-  window.initMap = function() {
-    window.__googleMapsLoaded = true;
-    if (typeof window.__triggerInitMap === 'function') {
-      window.__triggerInitMap();
-    }
-  };
-</script>
+<div id="toast" class="toast">Pesan Sistem</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -416,7 +401,7 @@ let markers = {};
 let allPanelData = [];
 let initialBoundsSet = false;
 
-// Fungsi Visual Cuaca Detail dengan Mapping ID Lengkap
+// Fungsi Visual Cuaca Detail dengan Mapping ID Lengkap (Jawa Timur / Indonesia Context)
 function getWeatherVisualById(weatherId) {
     const id = parseInt(weatherId);
     
@@ -428,20 +413,68 @@ function getWeatherVisualById(weatherId) {
     const iconFog = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="9" y1="16" x2="15" y2="16"/></svg>`;
     const iconDrizzle = `<svg class="bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 19l2 2m4-2l2 2m-4-6l2 2m0-6l2 2M20 16.58A5 5 0 0 0 18 10h-1.26A8 8 0 1 0 4 15.25"/></svg>`;
 
-     if (id == 0) return { label: 'NaN', meaning: "Undefined", class: 'card-clouds', icon: iconCloud };
+    // no data
+     if (id == 0) {
+        return { label: 'NaN', meaning: "Undefined", class: 'card-clouds', icon: iconCloud };
+    }
 
-    // 1. Thunderstorm
-    if (id >= 200 && id < 300) return { label: 'Thunderstorm', meaning: "Petir/Hujan Badai", class: 'card-thunderstorm', icon: iconStorm };
-    // 2. Drizzle
-    if (id >= 300 && id < 400) return { label: 'Drizzle', meaning: "Gerimis", class: 'card-drizzle', icon: iconDrizzle };
-    // 3. Rain
-    if (id >= 500 && id < 600) return { label: 'Rain', meaning: "Hujan", class: 'card-rain', icon: iconRain };
-    // 4. Atmosphere
-    if (id >= 700 && id < 800) return { label: 'Atmosphere', meaning: "Kabut/Berasap", class: 'card-atmosphere', icon: iconFog };
-    // 5. Clear
-    if (id == 800) return { label: 'Clear', meaning: "Langit Cerah", class: 'card-clear', icon: iconSun };
-    // 6. Clouds
-    if (id > 800 && id < 900) return { label: 'Clouds', meaning: "Berawan/Mendung", class: 'card-clouds', icon: iconCloud };
+    // 1. Thunderstorm (200 - 232)
+    if (id >= 200 && id < 300) {
+        let desc = "Petir";
+        if (id == 200) desc = "Petir + Hujan Ringan";
+        if (id == 201) desc = "Petir + Hujan";
+        if (id == 202) desc = "Petir + Hujan Lebat";
+        if (id == 210) desc = "Petir Ringan";
+        if (id == 211) desc = "Petir (Thunderstorm)";
+        if (id == 230) desc = "Petir + Gerimis Ringan";
+        return { label: 'Thunderstorm', meaning: desc, class: 'card-thunderstorm', icon: iconStorm };
+    }
+
+    // 2. Drizzle (300 - 321)
+    if (id >= 300 && id < 400) {
+        let desc = "Gerimis";
+        if (id == 300) desc = "Gerimis Ringan";
+        if (id == 301) desc = "Gerimis Sedang";
+        if (id == 310) desc = "Gerimis Ringan (Drizzle)";
+        if (id == 311) desc = "Hujan Gerimis";
+        return { label: 'Drizzle', meaning: desc, class: 'card-drizzle', icon: iconDrizzle };
+    }
+
+    // 3. Rain (500 - 531)
+    if (id >= 500 && id < 600) {
+        let desc = "Hujan";
+        if (id == 500) desc = "Hujan Ringan";
+        if (id == 501) desc = "Hujan Sedang";
+        if (id == 502) desc = "Hujan Lebat";
+        if (id == 503) desc = "Hujan Sangat Lebat";
+        if (id >= 520 && id <= 522) desc = "Hujan Gerimis / Shower";
+        return { label: 'Rain', meaning: desc, class: 'card-rain', icon: iconRain };
+    }
+
+    // 4. Atmosphere (700 - 781)
+    if (id >= 700 && id < 800) {
+        let desc = "Atmosferik";
+        if (id == 701) desc = "Kabut Tipis (Mist)";
+        if (id == 721) desc = "Kabut Polusi (Haze)";
+        if (id == 741) desc = "Kabut Tebal (Fog)";
+        if (id == 761) desc = "Debu Ringan (Dust)";
+        return { label: 'Atmosphere', meaning: desc, class: 'card-atmosphere', icon: iconFog };
+    }
+
+    // 5. Clear (800)
+    if (id == 800) {
+        return { label: 'Clear', meaning: "Langit Cerah", class: 'card-clear', icon: iconSun };
+    }
+
+    // 6. Clouds (801 - 804)
+    if (id > 800 && id < 900) {
+        let desc = "Berawan";
+        if (id == 801) desc = "Sedikit Berawan";
+        if (id == 802) desc = "Awan Tersebar";
+        if (id == 803) desc = "Awan Pecah";
+        if (id == 804) desc = "Mendung (Overcast)";
+        return { label: 'Clouds', meaning: desc, class: 'card-clouds', icon: iconCloud };
+    }
 
     return { label: 'Normal', meaning: "Kondisi Standar", class: 'card-clouds', icon: iconCloud };
 }
@@ -465,7 +498,7 @@ async function getAddressFromCoords(lat, lng) {
   } catch (error) { return "Gagal memuat alamat"; }
 }
 
-function realInitMap() {
+window.initMap = function() {
     const defaultCenter = { lat: -7.453, lng: 112.714 };
     map = new google.maps.Map(document.getElementById("map"), {
         center: defaultCenter, 
@@ -480,13 +513,7 @@ function realInitMap() {
         showToast("Koordinat dipilih"); toggleModal(true);
     });
     listenFirebase();
-}
-
-if (window.__googleMapsLoaded) {
-    realInitMap();
-} else {
-    window.__triggerInitMap = realInitMap;
-}
+};
 
 function listenFirebase() {
     onValue(ref(db, "panelPJU"), (snapshot) => {
@@ -527,12 +554,18 @@ function listenFirebase() {
                   markers[id].setPosition(pos); 
                   markers[id].setIcon(icon); 
                 } else { 
-                  markers[id] = new google.maps.Marker({ position: pos, map: map, icon: icon, label: { text: id, fontSize: "10px", fontWeight: "900", color: "#000", labelOrigin: new google.maps.Point(12, -15) } }); 
-                  markers[id].addListener('click', () => {
-                    const searchInput = document.getElementById("searchInput");
-                    searchInput.value = (searchInput.value === id) ? "" : id;
-                    filterPanels();
-                  });
+                  markers[id] = new google.maps.Marker({ 
+                    position: pos, 
+                    map: map, 
+                    icon: icon, 
+                    label: { 
+                      text: id, 
+                      fontSize: "10px", 
+                      fontWeight: "900", 
+                      color: "#000", 
+                      labelOrigin: new google.maps.Point(12, -15) 
+                    } 
+                  }); 
                 }
             }
         });
@@ -579,9 +612,9 @@ window.kirimData = async function() {
       cuaca_id: 0, 
       jarak_pandang: 0, 
       status_panel: "MATI", mode: "OTOMATIS",
-      update_terakhir: "--:--",
       sunrise: "--:--",
       sunset: "--:--",
+      update_terakhir: "--:--",
       simulasi: "false"
     });
     toggleModal(false); initialBoundsSet = false; showToast(`${customID} terdaftar.`);
@@ -603,9 +636,8 @@ function renderList(filteredData) {
     const weatherId = val.cuaca_id || 0;
     const visual = getWeatherVisualById(weatherId);
     const visibilityKm = ((val.jarak_pandang || 0) / 1000).toFixed(1);
-    
-    // FIX: Deteksi multi-key waktu (hardware mungkin pakai nama key berbeda seperti 'waktu' atau 'jam')
-    const jamUpdate = val.update_terakhir || val.waktu || val.jam || val.timestamp || "--:--";
+    const jamUpdate = val.update_terakhir || "--:--";
+
 
     const dayaValue = val.daya_w || 0;
     const arusValue = val.arus_ampere || 0;
@@ -618,13 +650,8 @@ function renderList(filteredData) {
 
     card.className = `device-card ${visual.class} ${isPanelOn ? 'status-on' : ''}`;
     card.innerHTML = `
-      <!-- FIX: Tampilan badge jam yang lebih jelas dengan icon -->
-      <div class="update-badge" title="Waktu update perangkat">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        ${jamUpdate}
-      </div>
+      <div class="update-badge">${jamUpdate}</div>
       ${visual.icon}
-      
       <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px; position:relative; z-index:1">
         <div class="bulb-container">${bulbSvg}</div>
         <div>
